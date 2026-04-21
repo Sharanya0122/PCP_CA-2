@@ -2,9 +2,9 @@ import axios from 'axios';
 
 const BASE_URL = 'https://t4e-testserver.onrender.com/api';
 
-// Get token
+
 export const getToken = async (
-  studentId = 'SHARANYA V R',
+  studentId = 'SHARANYA',
   password = '148855'
 ) => {
   const { data } = await axios.post(`${BASE_URL}/public/token`, {
@@ -15,7 +15,6 @@ export const getToken = async (
   return data;
 };
 
-// Get dataset (ROBUST VERSION)
 export const getDataset = async (token, dataUrl) => {
   const response = await axios.get(`${BASE_URL}${dataUrl}`, {
     headers: {
@@ -25,7 +24,6 @@ export const getDataset = async (token, dataUrl) => {
 
   const data = response.data;
 
-  // Handle ALL possible structures
   if (data?.data?.orders) {
     return data.data.orders;
   }
@@ -46,19 +44,19 @@ export const getDataset = async (token, dataUrl) => {
   return [];
 };
 
-// Fetch orders
+
 export const fetchOrders = async () => {
   try {
     const { token, dataUrl } = await getToken(
-      'SHARANYA V R',
+      'SHARANYA',
       '148855'
     );
 
-    console.log("DATA URL:", dataUrl); // DEBUG
+    console.log("DATA URL:", dataUrl);
 
     const dataset = await getDataset(token, dataUrl);
 
-    console.log("FINAL DATA:", dataset); // DEBUG
+    console.log("FINAL DATA:", dataset);
 
     return dataset;
   } catch (error) {
