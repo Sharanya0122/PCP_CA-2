@@ -1,81 +1,62 @@
-import { createContext, useReducer, useEffect } from 'react';
-import { AppReducer, initialState } from '../reducer/AppReducer';
-import { getToken, fetchOrders } from '../services/api';
+import { createContext, useEffect, useReducer } from "react";
+import { getDataset, getToken } from "../services/api";
+import orderReducer, { initialState } from "../reducer/orderReducer";
 
-export const AppContext = createContext();
+const OrderContext = createContext(null);
 
-export const AppProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(AppReducer, initialState);
+const OrderProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(orderReducer, initialState);
 
+  // Fetch orders from server
   useEffect(() => {
-    let isMounted = true;
-
-    const initData = async () => {
+    const fetchMovies = async () => {
+      dispatch({ type: "FETCH_START" });
       try {
-        let authData = await getToken("SHARANYA V R", "148855");
-        let token = authData.token;
+        // Step 1: Get Token
+        const tokenRes = await getToken(
+          "E0123041", // replace during exam
+          "148855", // replace during exam
+          "setA", // dataset set
+        );
 
-        if (!token) {
-          throw new Error('Token not found');
-        }
+        // Step 2: Fetch dataset
+        const dataset = await getDataset(tokenRes.token, tokenRes.dataUrl);
+        const rawOrders = Array.isArray(dataset)
+          ? dataset
+          : dataset?.orders || dataset?.data || [];
 
-        if (isMounted) {
-          dispatch({ type: 'SET_TOKEN', payload: token });
-        }
-
-        const ordersData = await fetchOrders(token);
-
-        if (isMounted) {
-          const validOrders = ordersData.filter(order => order && order.id != null);
-          dispatch({ type: 'SET_ORDERS', payload: validOrders });
-        }
+        dispatch({ type: "SET_ORDERS", payload: rawOrders });
       } catch (err) {
-        if (isMounted) {
-          console.error("Initial auth failed, trying fallback");
-        }
-        try {
-          let authData = await getToken("SHARANYA_V_R", "148855");
-          let token = authData.token;
-
-          if (!token) {
-            throw new Error('Token not found');
-          }
-
-          if (isMounted) {
-            dispatch({ type: 'SET_TOKEN', payload: token });
-          }
-
-          const ordersData = await fetchOrders(token);
-
-          if (isMounted) {
-            const validOrders = ordersData.filter(order => order && order.id != null);
-            dispatch({ type: 'SET_ORDERS', payload: validOrders });
-          }
-        } catch (fallbackErr) {
-          if (isMounted) {
-            console.error("Fallback auth failed, using fallback dataset");
-            const fallbackDataset = [
-              { id: 1, customerName: 'Alice', status: 'delivered', total: 20 },
-              { id: 2, customerName: 'Bob', status: 'pending', total: 30 },
-              { id: 3, customerName: 'Charlie', status: 'cancelled', total: 15 }
-            ];
-            dispatch({ type: 'SET_ORDERS', payload: fallbackDataset });
-            dispatch({ type: 'SET_ERROR', payload: 'API Failed. Using fallback data.' });
-          }
-        }
+        console.error("Error fetching data:", err.message);
+        dispatch({ type: "FETCH_ERROR", payload: err.message });
       }
     };
 
-    initData();
-
-    return () => {
-      isMounted = false;
-    };
+    fetchMovies();
   }, []);
 
+  const setFilterText = (value) => {
+    dispatch({ type: "SET_FILTER_TEXT", payload: value });
+  };
+
+  const markAsDelivered = (orderId) => {
+    dispatch({ type: "MARK_AS_DELIVERED", payload: orderId });
+  };
+
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <OrderContext.Provider
+      value={{
+        orders: state.orders,
+        loading: state.loading,
+        error: state.error,
+        filterText: state.filterText,
+        setFilterText,
+        markAsDelivered,
+      }}
+    >
       {children}
-    </AppContext.Provider>
+    </OrderContext.Provider>
   );
 };
+
+export { OrderContext, OrderProvider };
