@@ -5,10 +5,16 @@ const Stats = () => {
   const { state } = useContext(AppContext);
 
   const orders = state.orders || [];
-  
+
   const total = orders.length;
-  const delivered = orders.filter(o => o.status === 'delivered').length;
-  const cancelled = orders.filter(o => o.status === 'cancelled').length;
+
+  const delivered = orders.filter(
+    o => o?.status?.toLowerCase() === 'delivered'
+  ).length;
+
+  const cancelled = orders.filter(
+    o => o?.status?.toLowerCase() === 'cancelled'
+  ).length;
 
   useEffect(() => {
     window.appState = {

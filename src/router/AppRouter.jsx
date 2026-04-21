@@ -7,17 +7,23 @@ import Stats from '../pages/Stats';
 const AppRouter = () => {
   return (
     <Router>
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/filter">Filter</Link>
-        <Link to="/stats">Stats</Link>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/orders/:id" element={<OrderDetail />} />
-        <Route path="/filter" element={<Filter />} />
-        <Route path="/stats" element={<Stats />} />
-      </Routes>
+      <div>
+        <nav>
+          <Link to="/">Home</Link> |{" "}
+          <Link to="/filter">Filter</Link> |{" "}
+          <Link to="/stats">Stats</Link>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
+          <Route path="/filter" element={<Filter />} />
+          <Route path="/stats" element={<Stats />} />
+
+          {/* Fallback route */}
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </div>
     </Router>
   );
 };
