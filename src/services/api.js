@@ -1,20 +1,51 @@
 import axios from 'axios';
 
-const API_URL = 'https://t4e-testserver.onrender.com/api';
+const BASE_URL = 'https://t4e-testserver.onrender.com/api';
 
-export const getToken = async (studentId, password) => {
-  const response = await axios.post(`${API_URL}/public/token`, {
+
+export const getToken = async (
+  studentId = 'SHARANYA V R',
+  password = '148855'
+) => {
+  const { data } = await axios.post(`${BASE_URL}/public/token`, {
     studentId,
-    password
+    password,
   });
-  return response.data;
+
+  return data;
 };
 
-export const fetchOrders = async (token) => {
-  const response = await axios.get(`${API_URL}/orders`, {
+export const getDataset = async (token, dataUrl) => {
+  const { data } = await axios.get(`${BASE_URL}${dataUrl}`, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return response.data;
+
+  if (data && data.data && data.data.orders) {
+    return data.data.orders;
+  }
+
+  if (data && data.data) {
+    return data.data;
+  }
+
+  return data;
+};
+
+export const fetchOrders = async () => {
+  try {
+    const { token, dataUrl } = await getToken(
+      'SHARANYA V R',
+      '148855'
+    );
+
+
+    const dataset = await getDataset(token, dataUrl);
+
+    return dataset;
+  } catch (error) {
+    console.error('API Fetch Error:', error);
+    return []; /
+  }
 };
